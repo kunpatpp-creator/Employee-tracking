@@ -1420,50 +1420,41 @@
                 const seconds = String(now.getSeconds()).padStart(2, '0');
                 const timestamp = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
                 
-                // อัพโหลดรูปภาพไปที่ Firebase Storage
+                // อัพโหลดรูปภาพไปที่ Firebase Storage (บังคับต้องสำเร็จ)
                 const uploadedImages = [];
                 if (images && images.length > 0) {
                     console.log(`📤 กำลังอัพโหลดรูปภาพ ${images.length} รูป...`);
                     
-                    // อัพโหลดทุกรูปพร้อมกัน (Parallel) แทนการทำทีละรูป
+                    // อัพโหลดทุกรูปพร้อมกัน (Parallel)
                     const uploadPromises = images.map(async (img, i) => {
-                        try {
-                            console.log(`📷 อัพโหลดรูปที่ ${i + 1}/${images.length}`);
-                            
-                            // แปลง base64 เป็น blob
-                            const response = await fetch(img.data);
-                            const blob = await response.blob();
-                            
-                            // สร้างชื่อไฟล์ unique
-                            const fileName = `images/${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}.jpg`;
-                            const { ref, uploadBytes, getDownloadURL } = window.firebaseModules;
-                            const storageRef = ref(window.storage, fileName);
-                            
-                            // อัพโหลดพร้อม timeout 10 วินาที
-                            const uploadPromise = uploadBytes(storageRef, blob).then(() => getDownloadURL(storageRef));
-                            const timeoutPromise = new Promise((_, reject) => 
-                                setTimeout(() => reject(new Error('Upload timeout')), 10000)
-                            );
-                            
-                            const downloadURL = await Promise.race([uploadPromise, timeoutPromise]);
-                            
-                            console.log(`✅ อัพโหลดรูปที่ ${i + 1} สำเร็จ`);
-                            
-                            return {
-                                data: downloadURL,
-                                description: img.description
-                            };
-                        } catch (error) {
-                            console.error(`❌ อัพโหลดรูปที่ ${i + 1} ไม่สำเร็จ:`, error.message);
-                            // ใช้ base64 แทน
-                            return {
-                                data: img.data,
-                                description: img.description
-                            };
-                        }
+                        console.log(`📷 อัพโหลดรูปที่ ${i + 1}/${images.length}`);
+                        
+                        // แปลง base64 เป็น blob
+                        const response = await fetch(img.data);
+                        const blob = await response.blob();
+                        
+                        // สร้างชื่อไฟล์ unique
+                        const fileName = `images/${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}.jpg`;
+                        const { ref, uploadBytes, getDownloadURL } = window.firebaseModules;
+                        const storageRef = ref(window.storage, fileName);
+                        
+                        // อัพโหลดพร้อม timeout 20 วินาที
+                        const uploadPromise = uploadBytes(storageRef, blob).then(() => getDownloadURL(storageRef));
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('อัพโหลดรูปภาพล้มเหลว กรุณาตรวจสอบสัญญาณอินเทอร์เน็ต')), 20000)
+                        );
+                        
+                        const downloadURL = await Promise.race([uploadPromise, timeoutPromise]);
+                        
+                        console.log(`✅ อัพโหลดรูปที่ ${i + 1} สำเร็จ`);
+                        
+                        return {
+                            data: downloadURL,
+                            description: img.description
+                        };
                     });
                     
-                    // รอให้ทุกรูปอัพโหลดเสร็จ (หรือ timeout)
+                    // รอให้ทุกรูปอัพโหลดเสร็จ (ถ้าไม่สำเร็จจะ throw error)
                     const results = await Promise.all(uploadPromises);
                     uploadedImages.push(...results);
                     
