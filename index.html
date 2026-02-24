@@ -650,7 +650,7 @@
             </div>
 
             <div style="display: block; margin-bottom: 10px;">
-                <button class="btn-add" onclick="addData()">➕ เพิ่มข้อมูล</button>
+                <button class="btn-add" onclick="addData()">💾 บันทึกข้อมูล</button>
             </div>
             
             <div class="button-group">
@@ -1345,7 +1345,7 @@
         }
 
         // เพิ่มข้อมูล
-        function addData() {
+        async function addData() {
             const name = document.getElementById('name').value.trim();
             const position = document.getElementById('position').value.trim();
             const department = document.getElementById('department').value.trim();
@@ -1374,11 +1374,31 @@
                 return;
             }
 
-            saveRecord(name, position, department, shift, shiftTime, details, notes, currentImages);
+            // แสดง loading
+            const addButton = document.querySelector('.btn-add');
+            const originalText = addButton.innerHTML;
+            addButton.innerHTML = '⏳ กำลังบันทึก...';
+            addButton.disabled = true;
+
+            try {
+                await saveRecord(name, position, department, shift, shiftTime, details, notes, currentImages);
+            } catch (error) {
+                console.error('Error in addData:', error);
+            } finally {
+                // คืนค่าปุ่ม
+                addButton.innerHTML = originalText;
+                addButton.disabled = false;
+            }
         }
 
         async function saveRecord(name, position, department, shift, shiftTime, details, notes, images) {
             try {
+                // ตรวจสอบว่า Firebase พร้อมหรือยัง
+                if (!window.db) {
+                    alert('กรุณารอสักครู่ ระบบกำลังโหลด...');
+                    return;
+                }
+
                 const now = new Date();
                 
                 // สร้าง timestamp รูปแบบ DD/MM/YYYY HH:MM:SS (ค.ศ.)
@@ -1450,7 +1470,7 @@
                 displayImageGallery();
 
                 await displayData();
-                alert('เพิ่มข้อมูลสำเร็จ!');
+                alert('บันทึกข้อมูลสำเร็จ!');
             } catch (error) {
                 console.error('Error saving record:', error);
                 alert('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
@@ -2130,7 +2150,27 @@
         }
 
         // โหลดข้อมูลเมื่อเปิดหน้า
-        document.addEventListener('DOMContentLoaded', displayData);
+        document.addEventListener('DOMContentLoaded', async function() {
+            // รอให้ Firebase โหลดเสร็จก่อน
+            let retries = 0;
+            while (!window.db && retries < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                retries++;
+            }
+            
+            if (!window.db) {
+                console.error('❌ Firebase ไม่สามารถโหลดได้');
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ Firebase กรุณา Refresh หน้าเว็บ');
+                return;
+            }
+            
+            console.log('✅ Firebase พร้อมใช้งาน');
+            
+            // โหลด Master Data และข้อมูล
+            await loadMasterDataFromExcel();
+            loadShiftData();
+            await displayData();
+        });
     </script>
 </body>
 </html>
