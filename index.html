@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข้อมูลการทำงานของพนักงาน</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add {
+            background: #667eea;
+            color: white;
+            display: block;
+            width: 100%;
+        }
+
+        .btn-add:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-download {
+            background: #28a745;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-download:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        .table-section {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .image-preview.show {
+            display: block;
+        }
+
+        .table-image {
+            max-width: 100px;
+            max-height: 100px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close-modal:hover {
+            color: #000;
+        }
+
+        .btn-summary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+            flex: 1;
+        }
+
+        .btn-summary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .summary-date {
+            margin-bottom: 20px;
+        }
+
+        .summary-date label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .summary-date input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .employee-list {
+            margin: 20px 0;
+        }
+
+        .employee-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: background 0.2s;
+        }
+
+        .employee-item:hover {
+            background: #e9ecef;
+        }
+
+        .employee-item.submitted {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+
+        .employee-item.not-submitted {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+
+        .employee-status {
+            font-size: 24px;
+            margin-right: 12px;
+            width: 30px;
+        }
+
+        .employee-info {
+            flex: 1;
+        }
+
+        .employee-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .employee-position {
+            font-size: 13px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .summary-stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .summary-stats h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+
+        .summary-stats .big-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .summary-stats .percentage {
+            font-size: 24px;
+            opacity: 0.9;
+        }
+
+        .detail-image {
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .gallery-item {
+            position: relative;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .gallery-item-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .gallery-item-remove:hover {
+            background: #c82333;
+        }
+
+        .image-input-section {
+            background: white;
+            padding: 15px;
+            border: 2px dashed #667eea;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .image-input-section input,
+        .image-input-section textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .image-input-section textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .btn-add-image {
+            background: #0066cc;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-add-image:hover {
+            background: #0052a3;
+        }
+
+        .gallery-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .gallery-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gallery-modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: auto;
+            position: relative;
+        }
+
+        .gallery-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .gallery-nav button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .gallery-nav button:hover {
+            background: #5568d3;
+        }
+
+        .gallery-nav button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+                border-radius: 5px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .form-section {
+                padding: 15px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                padding: 14px 20px;
+                font-size: 16px;
+                width: 100% !important;
+            }
+
+            .btn-add {
+                padding: 16px 20px;
+                font-size: 18px;
+            }
+
+            .image-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px 4px;
+            }
+
+            .table-image {
+                max-width: 60px;
+                max-height: 60px;
+            }
+
+            .modal-content {
+                max-width: 95%;
+                padding: 15px;
+            }
+
+            input, select, textarea {
+                font-size: 16px; /* ป้องกัน zoom บน iOS */
+            }
+
+            .summary-date input {
+                font-size: 16px;
+            }
+
+            .employee-item {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .employee-name {
+                font-size: 15px;
+            }
+
+            .summary-stats .big-number {
+                font-size: 28px;
+            }
+
+            .summary-stats .percentage {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 18px;
+            }
+
+            .btn-add {
+                font-size: 16px;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            .employee-item {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 ข้อมูลการทำงานของพนักงาน</h1>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label>📅 วันที่</label>
+                <input type="text" id="currentDate" readonly style="background: #f0f0f0; font-weight: bold;">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">ชื่อ-สกุล</label>
+                    <select id="name">
+                        <option value="">-- เลือกชื่อ-สกุล --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="position">ตำแหน่ง</label>
+                    <input type="text" id="position" placeholder="ตำแหน่งจะขึ้นมาอัตโนมัติ" readonly style="background: #f0f0f0;">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="department">แผนก</label>
+                    <input type="text" id="department" placeholder="แผนกจะขึ้นมาอัตโนมัติ" readonly style="background: #f0f0f0;">
+                </div>
+                <div class="form-group">
+                    <label for="shift">กะการทำงาน</label>
+                    <select id="shift">
+                        <option value="">-- เลือกกะ --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="shiftTime">หมายเหตุเวลา <small style="color: #999;">(กรณีที่เวลาไม่ตรงกะนั้นๆ เช่น 09:00-18:00 น.)</small></label>
+                <input type="text" id="shiftTime" placeholder="09:00-18:00 น.">
+            </div>
+
+            <div class="form-group">
+                <label for="image">อัพโหลดรูปภาพ</label>
+                <input type="file" id="image" accept="image/*">
+                <img id="imagePreview" class="image-preview" alt="Preview">
+            </div>
+
+            <div class="image-input-section" id="imageDetailsSection" style="display: none;">
+                <textarea id="imageDescription" placeholder="กรุณากรอกรายละเอียดรูปภาพ (ไม่จำเป็น)"></textarea>
+                <button class="btn-add-image" onclick="addImageToGallery()">➕ เพิ่มรูปภาพ</button>
+            </div>
+
+            <div class="image-gallery" id="imageGallery"></div>
+
+            <div class="form-group">
+                <label for="details">รายละเอียด</label>
+                <textarea id="details" placeholder="กรุณากรอกรายละเอียด"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">หมายเหตุ</label>
+                <textarea id="notes" placeholder="กรุณากรอกหมายเหตุ"></textarea>
+            </div>
+
+            <div style="display: block; margin-bottom: 10px;">
+                <button class="btn-add" onclick="addData()">➕ เพิ่มข้อมูล</button>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-download" onclick="showDateRangeModal()">📥 ดาวน์โหลด PDF</button>
+                <button class="btn-summary" onclick="showSummaryModal()">📊 ดูสรุปรายวัน</button>
+            </div>
+
+            <!-- ปุ่มอัพโหลด Master Excel -->
+            <div style="margin-top: 20px; padding: 15px; background: #f0f4ff; border-radius: 8px; border: 2px dashed #667eea;">
+                <h3 style="margin: 0 0 10px 0; color: #667eea; font-size: 16px;">📋 จัดการข้อมูล Master (ชื่อ-ตำแหน่ง-แผนก)</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="file" id="masterExcelFile" accept=".xlsx, .xls" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                    <button onclick="uploadMasterExcel()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; white-space: nowrap;">
+                        ⬆️ อัพโหลด Master
+                    </button>
+                    <button onclick="showCurrentMaster()" style="padding: 10px 20px; background: #17a2b8; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; white-space: nowrap;">
+                        👁️ ดู Master
+                    </button>
+                </div>
+                <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">
+                    💡 อัพโหลดไฟล์ Excel ที่มีคอลัมน์: <strong>ชื่อ-สกุล</strong>, <strong>ตำแหน่ง</strong>, <strong>แผนก</strong>
+                </p>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>ชื่อ-สกุล</th>
+                        <th>ตำแหน่ง</th>
+                        <th>แผนก</th>
+                        <th>กะการทำงาน</th>
+                        <th>หมายเหตุเวลา</th>
+                        <th>รูปภาพ</th>
+                        <th>รายละเอียด</th>
+                        <th>หมายเหตุ</th>
+                        <th>เวลาอัพโหลด</th>
+                        <th>การจัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+            <div id="emptyMessage" class="empty-message">ยังไม่มีข้อมูล กรุณากรอกข้อมูลข้างต้น</div>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับสรุปรายวัน -->
+    <div id="summaryModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeSummaryModal()">&times;</span>
+            <h2 style="color: #667eea; margin-top: 0;">📊 สรุปการกรอกข้อมูลรายวัน</h2>
+            
+            <div class="summary-date">
+                <label for="summaryDate">📅 เลือกวันที่:</label>
+                <input type="date" id="summaryDate" onchange="updateSummary()">
+                <div id="summaryDateBE" style="font-size: 12px; color: #667eea; margin-top: 5px;"></div>
+            </div>
+
+            <div id="employeeList" class="employee-list">
+                <!-- รายชื่อพนักงานจะแสดงที่นี่ -->
+            </div>
+
+            <div class="summary-stats">
+                <h3>สรุปผล</h3>
+                <div class="big-number" id="summaryCount">0/0</div>
+                <div class="percentage" id="summaryPercentage">0%</div>
+                <button onclick="downloadWeeklySummaryPDF()" style="margin-top: 15px; padding: 10px 20px; background: white; color: #667eea; border: 2px solid white; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                    📄 ดาวน์โหลดสรุปรายสัปดาห์ PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับเลือกช่วงวันที่ดาวน์โหลด PDF -->
+    <div id="dateRangeModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close-modal" onclick="closeDateRangeModal()">&times;</span>
+            <h2 style="color: #667eea; margin-top: 0;">📅 เลือกช่วงวันที่</h2>
+            
+            <div class="form-group">
+                <label for="pdfStartDate">วันที่เริ่มต้น:</label>
+                <input type="date" id="pdfStartDate" style="width: 100%;">
+            </div>
+            
+            <div class="form-group">
+                <label for="pdfEndDate">วันที่สิ้นสุด:</label>
+                <input type="date" id="pdfEndDate" style="width: 100%;">
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button onclick="downloadPDFByDateRange()" style="flex: 1; padding: 12px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    📄 ดาวน์โหลด
+                </button>
+                <button onclick="closeDateRangeModal()" style="flex: 1; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    ยกเลิก
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับแสดง Master Data -->
+    <div id="masterModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close-modal" onclick="closeMasterModal()">&times;</span>
+            <h2 style="color: #667eea; margin-top: 0;">📋 ข้อมูล Master (ชื่อ-ตำแหน่ง-แผนก)</h2>
+            <div id="masterDataContainer" style="max-height: 500px; overflow-y: auto;">
+                <p style="text-align: center; color: #999;">กำลังโหลด...</p>
+            </div>
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="closeMasterModal()" style="padding: 10px 30px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    ปิด
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับแสดงรายละเอียด -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="detailName"></h2>
+            <p><strong>แผนก:</strong> <span id="detailDepartment"></span></p>
+            <p><strong>กะการทำงาน:</strong> <span id="detailShift"></span></p>
+            <p><strong>หมายเหตุ:</strong></p>
+            <p id="detailNotes"></p>
+            <p><strong>เวลาอัพโหลด:</strong> <span id="detailDate"></span></p>
+            <hr style="margin: 20px 0;">
+            <h3>📷 รูปภาพและรายละเอียด</h3>
+            <div id="detailGalleryContainer"></div>
+        </div>
+    </div>
+
+    <!-- Modal สำหรับแสดงแกลเลอรี่รูปภาพ -->
+    <div id="galleryModal" class="gallery-modal">
+        <div class="gallery-modal-content">
+            <span class="close-modal" onclick="closeGalleryModal()">&times;</span>
+            <div class="gallery-nav">
+                <button id="prevBtn" onclick="previousImage()">← ก่อนหน้า</button>
+                <span id="imageCounter">0 / 0</span>
+                <button id="nextBtn" onclick="nextImage()">ถัดไป →</button>
+            </div>
+            <img id="galleryImage" class="detail-image" alt="Gallery Image">
+            <p><strong>รายละเอียด:</strong></p>
+            <p id="galleryDescription" style="min-height: 40px; padding: 10px; background: #f8f9fa; border-radius: 5px;"></p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAR-PtSw_78_lPI2XsdspLCIPP9swGyGAc",
+            authDomain: "employee-tracking-891db.firebaseapp.com",
+            projectId: "employee-tracking-891db",
+            storageBucket: "employee-tracking-891db.firebasestorage.app",
+            messagingSenderId: "288580054114",
+            appId: "1:288580054114:web:60b93f66c071ee6785f53b"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // ทำให้ Firebase modules พร้อมใช้งาน globally
+        window.db = db;
+        window.storage = storage;
+        window.firebaseModules = { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, Timestamp, ref, uploadBytes, getDownloadURL };
+        
+        console.log('🔥 Firebase initialized successfully');
+    </script>
+    
+    <script>
+        // ตัวแปรสำหรับเก็บรูปภาพที่อัพโหลด
+        let currentImages = [];
+        let currentGalleryRecord = null;
+        let currentGalleryIndex = 0;
+        // เก็บข้อมูล Master Employees (Embedded)
+        let masterEmployees = [
+            {
+                "ชื่อ-สกุล": "เซฟ",
+                "ตำแหน่ง": "นักเรียน ปี 2",
+                "แผนก": "สลิธริน"
+            },
+            {
+                "ชื่อ-สกุล": "เกม",
+                "ตำแหน่ง": "นักเรียน ปี 1",
+                "แผนก": "ฮาฟเวอร์พัฟ"
+            },
+            {
+                "ชื่อ-สกุล": "มิกกี้",
+                "ตำแหน่ง": "นักเรียน ปี 6",
+                "แผนก": "เรเวนคลอ"
+            },
+            {
+                "ชื่อ-สกุล": "พลอย",
+                "ตำแหน่ง": "นักเรียน ปี 5",
+                "แผนก": "กริฟฟินดอร์"
+            },
+            {
+                "ชื่อ-สกุล": "นิว",
+                "ตำแหน่ง": "นักเรียน ปี 4",
+                "แผนก": "กริฟฟินดอร์"
+            },
+            {
+                "ชื่อ-สกุล": "บิว",
+                "ตำแหน่ง": "นักเรียน ปี 3",
+                "แผนก": "ฮาฟเวอร์พัฟ"
+            }
+        ];
+
+        // โหลด Master Data จาก Firestore
+        async function loadMasterFromFirestore() {
+            try {
+                const { collection, getDocs } = window.firebaseModules;
+                const querySnapshot = await getDocs(collection(window.db, 'masterEmployees'));
+                
+                if (!querySnapshot.empty) {
+                    const firestoreMaster = [];
+                    querySnapshot.forEach((doc) => {
+                        firestoreMaster.push(doc.data());
+                    });
+                    
+                    if (firestoreMaster.length > 0) {
+                        masterEmployees = firestoreMaster;
+                        console.log(`✅ โหลด Master Data จาก Firestore: ${masterEmployees.length} คน`);
+                        return true;
+                    }
+                }
+                
+                console.log('ℹ️ ใช้ Master Data แบบ Embedded');
+                return false;
+            } catch (error) {
+                console.error('❌ Error loading master from Firestore:', error);
+                console.log('ℹ️ ใช้ Master Data แบบ Embedded');
+                return false;
+            }
+        }
+
+        // โหลดข้อมูลจาก Firestore
+        async function loadData() {
+            try {
+                const { collection, getDocs, query, orderBy } = window.firebaseModules;
+                const q = query(collection(window.db, 'employees'), orderBy('timestamp', 'desc'));
+                const querySnapshot = await getDocs(q);
+                
+                const data = [];
+                querySnapshot.forEach((doc) => {
+                    data.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                console.log(`✅ โหลดข้อมูล ${data.length} รายการจาก Firestore`);
+                return data;
+            } catch (error) {
+                console.error('❌ Error loading data:', error);
+                return [];
+            }
+        }
+
+        // บันทึกข้อมูลลง Firestore
+        async function saveData(recordData) {
+            try {
+                const { collection, addDoc, Timestamp } = window.firebaseModules;
+                const docRef = await addDoc(collection(window.db, 'employees'), {
+                    ...recordData,
+                    createdAt: Timestamp.now()
+                });
+                console.log('✅ บันทึกข้อมูลสำเร็จ ID:', docRef.id);
+                return docRef.id;
+            } catch (error) {
+                console.error('❌ Error saving data:', error);
+                throw error;
+            }
+        }
+
+        // ลบข้อมูลจาก Firestore
+        async function deleteData(id) {
+            try {
+                const { doc, deleteDoc } = window.firebaseModules;
+                await deleteDoc(doc(window.db, 'employees', id));
+                console.log('✅ ลบข้อมูลสำเร็จ ID:', id);
+            } catch (error) {
+                console.error('❌ Error deleting data:', error);
+                throw error;
+            }
+        }
+
+        // โหลด Master Employees (ดึงจาก Firestore ก่อน ถ้าไม่มีใช้ Embedded)
+        async function loadMasterDataFromExcel() {
+            const loaded = await loadMasterFromFirestore();
+            updateNameDropdown();
+            if (loaded) {
+                console.log(`✅ โหลด Master Data ${masterEmployees.length} คน สำเร็จ (Firestore)`);
+            } else {
+                console.log(`✅ โหลด Master Data ${masterEmployees.length} คน สำเร็จ (Embedded)`);
+            }
+        }
+
+        // อัพโหลด Master Excel ไปยัง Firestore
+        async function uploadMasterExcel() {
+            const fileInput = document.getElementById('masterExcelFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('กรุณาเลือกไฟล์ Excel');
+                return;
+            }
+
+            try {
+                const reader = new FileReader();
+                
+                reader.onload = async function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+                        if (jsonData.length === 0) {
+                            alert('ไฟล์ Excel ไม่มีข้อมูล');
+                            return;
+                        }
+
+                        // ตรวจสอบว่ามีคอลัมน์ที่จำเป็น
+                        const firstRow = jsonData[0];
+                        if (!firstRow['ชื่อ-สกุล']) {
+                            alert('ไฟล์ Excel ต้องมีคอลัมน์ "ชื่อ-สกุล"');
+                            return;
+                        }
+
+                        // ลบข้อมูล Master เก่าทั้งหมดใน Firestore
+                        const { collection, getDocs, deleteDoc, doc, addDoc } = window.firebaseModules;
+                        const masterCollection = collection(window.db, 'masterEmployees');
+                        const snapshot = await getDocs(masterCollection);
+                        
+                        // ลบทีละรายการ
+                        const deletePromises = [];
+                        snapshot.forEach((docSnapshot) => {
+                            deletePromises.push(deleteDoc(doc(window.db, 'masterEmployees', docSnapshot.id)));
+                        });
+                        await Promise.all(deletePromises);
+                        console.log('🗑️ ลบ Master Data เก่าทั้งหมด');
+
+                        // เพิ่มข้อมูลใหม่
+                        const addPromises = [];
+                        jsonData.forEach(row => {
+                            if (row['ชื่อ-สกุล']) {
+                                addPromises.push(addDoc(masterCollection, {
+                                    'ชื่อ-สกุล': row['ชื่อ-สกุล'] || '',
+                                    'ตำแหน่ง': row['ตำแหน่ง'] || '',
+                                    'แผนก': row['แผนก'] || ''
+                                }));
+                            }
+                        });
+                        await Promise.all(addPromises);
+
+                        // โหลดข้อมูลใหม่
+                        await loadMasterFromFirestore();
+                        updateNameDropdown();
+
+                        alert(`✅ อัพโหลด Master Data สำเร็จ!\n\nจำนวน: ${masterEmployees.length} คน`);
+                        fileInput.value = ''; // ล้างไฟล์
+                    } catch (error) {
+                        console.error('Error processing Excel:', error);
+                        alert('เกิดข้อผิดพลาดในการอ่านไฟล์: ' + error.message);
+                    }
+                };
+
+                reader.readAsArrayBuffer(file);
+            } catch (error) {
+                console.error('Error uploading master:', error);
+                alert('เกิดข้อผิดพลาดในการอัพโหลด: ' + error.message);
+            }
+        }
+
+        // แสดงข้อมูล Master ปัจจุบัน
+        function showCurrentMaster() {
+            const modal = document.getElementById('masterModal');
+            const container = document.getElementById('masterDataContainer');
+            
+            if (masterEmployees.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">ไม่มีข้อมูล Master</p>';
+            } else {
+                let html = `
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #667eea; color: white;">
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">#</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">ชื่อ-สกุล</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">ตำแหน่ง</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">แผนก</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                masterEmployees.forEach((emp, index) => {
+                    html += `
+                        <tr style="background: ${index % 2 === 0 ? '#f8f9fa' : 'white'};">
+                            <td style="padding: 10px; border: 1px solid #ddd;">${index + 1}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">${escapeHtml(emp['ชื่อ-สกุล'])}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">${escapeHtml(emp['ตำแหน่ง'] || '-')}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">${escapeHtml(emp['แผนก'] || '-')}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 15px; text-align: center; color: #666;">
+                        รวมทั้งหมด: <strong>${masterEmployees.length}</strong> คน
+                    </p>
+                `;
+                
+                container.innerHTML = html;
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // ปิด Master Modal
+        function closeMasterModal() {
+            document.getElementById('masterModal').style.display = 'none';
+        }
+
+        // โหลด Shift Data (ใช้ข้อมูล Embedded)
+        function loadShiftData() {
+            const shifts = [
+                { "name": "กะเช้า 08:00-17:00 น." },
+                { "name": "กะบ่าย 13:00-22:00 น." },
+                { "name": "กะกลางคืน 19:00-04:00 น." }
+            ];
+            
+            const shiftSelect = document.getElementById('shift');
+            shiftSelect.innerHTML = '<option value="">-- เลือกกะ --</option>';
+            
+            shifts.forEach(shift => {
+                const option = document.createElement('option');
+                option.value = shift.name;
+                option.textContent = shift.name;
+                shiftSelect.appendChild(option);
+            });
+            
+            console.log(`✅ โหลด Shift Data ${shifts.length} รายการ สำเร็จ (Embedded)`);
+        }
+
+        // โหลดไฟล์ Master Employees (ถ้าผู้ใช้อัพโหลด)
+        function loadMasterFile() {
+            const fileInput = document.getElementById('masterFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('กรุณาเลือกไฟล์');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+                    // เก็บข้อมูลจาก Master
+                    masterEmployees = jsonData.filter(row => row['ชื่อ-สกุล']); // เอาแค่ที่มีชื่อ
+
+                    updateNameDropdown();
+                    alert(`✅ โหลดข้อมูล ${masterEmployees.length} คน สำเร็จ!`);
+                } catch (error) {
+                    console.error('Error reading file:', error);
+                    alert('เกิดข้อผิดพลาดในการอ่านไฟล์: ' + error.message);
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // อัปเดต Dropdown จาก Master Data
+        function updateNameDropdown() {
+            const nameSelect = document.getElementById('name');
+            const currentValue = nameSelect.value;
+            
+            nameSelect.innerHTML = '<option value="">-- เลือกชื่อ-สกุล --</option>';
+
+            masterEmployees.forEach((emp, index) => {
+                const option = document.createElement('option');
+                option.value = emp['ชื่อ-สกุล'];
+                option.setAttribute('data-position', emp['ตำแหน่ง']);
+                option.setAttribute('data-department', emp['แผนก']);
+                option.textContent = emp['ชื่อ-สกุล'];
+                nameSelect.appendChild(option);
+            });
+
+            nameSelect.value = currentValue;
+        }
+
+        // อัปเดต Master Data (ชื่อ ตำแหน่ง แผนก)
+        function updateMasterData() {
+            const data = loadData();
+            const nameSelect = document.getElementById('name');
+            
+            // เก็บชื่อที่ไม่ซ้ำกัน
+            const uniqueNames = {};
+            data.forEach(record => {
+                if (record.name && !uniqueNames[record.name]) {
+                    uniqueNames[record.name] = {
+                        position: record.position || '',
+                        department: record.department || ''
+                    };
+                }
+            });
+
+            // เก็บ option เดิม (-- เลือกชื่อ-สกุล --)
+            const currentValue = nameSelect.value;
+            nameSelect.innerHTML = '<option value="">-- เลือกชื่อ-สกุล --</option>';
+
+            // เพิ่ม option ใหม่
+            Object.entries(uniqueNames).forEach(([name, info]) => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.setAttribute('data-position', info.position);
+                option.setAttribute('data-department', info.department);
+                option.textContent = name;
+                nameSelect.appendChild(option);
+            });
+
+            // คืน value ที่เลือกไว้
+            nameSelect.value = currentValue;
+        }
+
+        // โหลดข้อมูลตำแหน่งและแผนกเมื่อเลือกชื่อ
+        document.addEventListener('DOMContentLoaded', function() {
+            // แสดงวันที่ปัจจุบัน (ค.ศ.)
+            const today = new Date();
+            const dateString = today.toLocaleDateString('en-GB', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('currentDate').value = dateString;
+
+            const nameSelect = document.getElementById('name');
+            const positionInput = document.getElementById('position');
+            const departmentInput = document.getElementById('department');
+
+            nameSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                
+                if (selectedOption.value) {
+                    positionInput.value = selectedOption.getAttribute('data-position') || '';
+                    departmentInput.value = selectedOption.getAttribute('data-department') || '';
+                } else {
+                    positionInput.value = '';
+                    departmentInput.value = '';
+                }
+            });
+
+            loadMasterDataFromExcel(); // โหลด Master Data จากข้อมูล Embedded
+            loadShiftData(); // โหลด Shift Data
+            displayData();
+        });
+
+        // แสดงตัวอย่างรูปภาพ และแสดง section รายละเอียด
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = event.target.result;
+                    preview.classList.add('show');
+                    document.getElementById('imageDetailsSection').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // เพิ่มรูปภาพลงในแกลเลอรี่
+        function addImageToGallery() {
+            const imageInput = document.getElementById('image');
+            const description = document.getElementById('imageDescription').value.trim();
+            const preview = document.getElementById('imagePreview');
+
+            if (!imageInput.files.length) {
+                alert('กรุณาเลือกรูปภาพ');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                currentImages.push({
+                    data: event.target.result,
+                    description: description
+                });
+
+                // รีเซ็ตฟอร์ม
+                imageInput.value = '';
+                document.getElementById('imageDescription').value = '';
+                preview.classList.remove('show');
+                document.getElementById('imageDetailsSection').style.display = 'none';
+
+                // อัพเดตแสดงแกลเลอรี่
+                displayImageGallery();
+            };
+            reader.readAsDataURL(imageInput.files[0]);
+        }
+
+        // แสดงแกลเลอรี่รูปภาพในฟอร์ม
+        function displayImageGallery() {
+            const gallery = document.getElementById('imageGallery');
+            gallery.innerHTML = '';
+
+            currentImages.forEach((img, index) => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.innerHTML = `
+                    <img src="${img.data}" alt="Image ${index + 1}" onclick="viewImageDetails(${index})">
+                    <button class="gallery-item-remove" onclick="removeImage(${index})">✕</button>
+                    ${img.description ? `<div style="font-size: 10px; color: #666; padding: 5px; background: #f0f0f0; max-height: 30px; overflow: hidden; text-overflow: ellipsis;">📝 ${escapeHtml(img.description)}</div>` : ''}
+                `;
+                gallery.appendChild(item);
+            });
+        }
+
+        // ลบรูปภาพจากแกลเลอรี่
+        function removeImage(index) {
+            currentImages.splice(index, 1);
+            displayImageGallery();
+            if (currentImages.length === 0) {
+                document.getElementById('imageDetailsSection').style.display = 'none';
+            }
+        }
+
+        // ดูรายละเอียดรูปภาพในแกลเลอรี่
+        function viewImageDetails(index) {
+            currentGalleryIndex = index;
+            const modal = document.getElementById('galleryModal');
+            modal.classList.add('show');
+            displayGalleryImage();
+        }
+
+        // แสดงรูปภาพในแกลเลอรี่ modal
+        function displayGalleryImage() {
+            if (currentImages.length === 0) return;
+            
+            const img = currentImages[currentGalleryIndex];
+            document.getElementById('galleryImage').src = img.data;
+            document.getElementById('galleryDescription').textContent = img.description || '(ไม่มีรายละเอียด)';
+            document.getElementById('imageCounter').textContent = (currentGalleryIndex + 1) + ' / ' + currentImages.length;
+            
+            document.getElementById('prevBtn').disabled = currentGalleryIndex === 0;
+            document.getElementById('nextBtn').disabled = currentGalleryIndex === currentImages.length - 1;
+        }
+
+        // รูปภาพถัดไป
+        function nextImage() {
+            if (currentGalleryIndex < currentImages.length - 1) {
+                currentGalleryIndex++;
+                displayGalleryImage();
+            }
+        }
+
+        // รูปภาพก่อนหน้า
+        function previousImage() {
+            if (currentGalleryIndex > 0) {
+                currentGalleryIndex--;
+                displayGalleryImage();
+            }
+        }
+
+        // ปิด Gallery Modal
+        function closeGalleryModal() {
+            document.getElementById('galleryModal').classList.remove('show');
+        }
+
+        // เพิ่มข้อมูล
+        function addData() {
+            const name = document.getElementById('name').value.trim();
+            const position = document.getElementById('position').value.trim();
+            const department = document.getElementById('department').value.trim();
+            const shift = document.getElementById('shift').value.trim();
+            const shiftTime = document.getElementById('shiftTime').value.trim();
+            const details = document.getElementById('details').value.trim();
+            const notes = document.getElementById('notes').value.trim();
+
+            if (!name) {
+                alert('กรุณากรอกชื่อ-สกุล');
+                return;
+            }
+
+            if (!position) {
+                alert('กรุณากรอกตำแหน่ง');
+                return;
+            }
+
+            if (!shift) {
+                alert('กรุณาเลือกกะการทำงาน');
+                return;
+            }
+
+            if (currentImages.length === 0) {
+                alert('กรุณาเพิ่มอย่างน้อยรูปภาพหนึ่งรูป');
+                return;
+            }
+
+            saveRecord(name, position, department, shift, shiftTime, details, notes, currentImages);
+        }
+
+        async function saveRecord(name, position, department, shift, shiftTime, details, notes, images) {
+            try {
+                const now = new Date();
+                
+                // สร้าง timestamp รูปแบบ DD/MM/YYYY HH:MM:SS (ค.ศ.)
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const timestamp = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+                
+                // อัพโหลดรูปภาพไปที่ Firebase Storage
+                const uploadedImages = [];
+                if (images && images.length > 0) {
+                    for (let i = 0; i < images.length; i++) {
+                        const img = images[i];
+                        try {
+                            // แปลง base64 เป็น blob
+                            const response = await fetch(img.data);
+                            const blob = await response.blob();
+                            
+                            // สร้างชื่อไฟล์ unique
+                            const fileName = `images/${Date.now()}_${i}.jpg`;
+                            const { ref, uploadBytes, getDownloadURL } = window.firebaseModules;
+                            const storageRef = ref(window.storage, fileName);
+                            
+                            // อัพโหลด
+                            await uploadBytes(storageRef, blob);
+                            const downloadURL = await getDownloadURL(storageRef);
+                            
+                            uploadedImages.push({
+                                data: downloadURL,
+                                description: img.description
+                            });
+                        } catch (error) {
+                            console.error('Error uploading image:', error);
+                        }
+                    }
+                }
+                
+                const newRecord = {
+                    name,
+                    position,
+                    department,
+                    shift,
+                    shiftTime,
+                    details,
+                    notes,
+                    images: uploadedImages,
+                    timestamp: timestamp
+                };
+
+                await saveData(newRecord);
+                updateMasterData(); // อัปเดต master data
+
+                // ล้างฟอร์ม
+                document.getElementById('name').value = '';
+                document.getElementById('position').value = '';
+                document.getElementById('department').value = '';
+                document.getElementById('shift').value = '';
+                document.getElementById('shiftTime').value = '';
+                document.getElementById('details').value = '';
+                document.getElementById('notes').value = '';
+                document.getElementById('image').value = '';
+                const preview = document.getElementById('imagePreview');
+                preview.classList.remove('show');
+                document.getElementById('imageDetailsSection').style.display = 'none';
+                currentImages = [];
+                displayImageGallery();
+
+                await displayData();
+                alert('เพิ่มข้อมูลสำเร็จ!');
+            } catch (error) {
+                console.error('Error saving record:', error);
+                alert('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
+            }
+        }
+
+        // แสดงข้อมูลในตาราง
+        async function displayData() {
+            const data = await loadData();
+            const tbody = document.getElementById('tableBody');
+            const emptyMessage = document.getElementById('emptyMessage');
+
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                emptyMessage.style.display = 'block';
+                return;
+            }
+
+            emptyMessage.style.display = 'none';
+
+            data.forEach(record => {
+                const row = document.createElement('tr');
+                const imageHtml = record.images && record.images.length > 0
+                    ? `<img src="${record.images[0].data}" class="table-image" onclick="showDetail('${record.id}')">`
+                    : '-';
+                const imageCount = record.images ? record.images.length : 0;
+                row.innerHTML = `
+                    <td>${escapeHtml(record.name)}</td>
+                    <td>${escapeHtml(record.position || '-')}</td>
+                    <td>${escapeHtml(record.department)}</td>
+                    <td>${escapeHtml(record.shift)}</td>
+                    <td>${escapeHtml(record.shiftTime || '-')}</td>
+                    <td>${imageHtml}</td>
+                    <td><button class="btn-delete" style="background: #0066cc; color: white; padding: 6px 12px;" onclick="showDetail('${record.id}')">ดูรายละเอียด (${imageCount})</button></td>
+                    <td>${escapeHtml(record.notes)}</td>
+                    <td>${record.timestamp || record.date}</td>
+                    <td>
+                        <button class="btn-delete" onclick="deleteRecord('${record.id}')">ลบ</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // แสดง Modal รายละเอียด
+        async function showDetail(id) {
+            const data = await loadData();
+            const record = data.find(r => r.id === id);
+            
+            if (record) {
+                document.getElementById('detailName').textContent = record.name;
+                document.getElementById('detailDepartment').textContent = record.department;
+                document.getElementById('detailShift').textContent = record.shift || '-';
+                document.getElementById('detailNotes').textContent = record.notes || '-';
+                document.getElementById('detailDate').textContent = record.timestamp || record.date;
+
+                // แสดงแกลเลอรี่รูปภาพ
+                const gallery = document.getElementById('detailGalleryContainer');
+                gallery.innerHTML = '';
+
+                if (record.images && record.images.length > 0) {
+                    record.images.forEach((img, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'gallery-item';
+                        item.style.cursor = 'pointer';
+                        item.innerHTML = `
+                            <img src="${img.data}" alt="Image ${index + 1}" onclick="showDetailGallery('${id}', ${index})">
+                            ${img.description ? `<div style="font-size: 10px; color: #666; padding: 5px; background: #f0f0f0; max-height: 30px; overflow: hidden; text-overflow: ellipsis;">📝 ${escapeHtml(img.description)}</div>` : '<div style="font-size: 10px; color: #999; padding: 5px; background: #f0f0f0;">ไม่มีรายละเอียด</div>'}
+                        `;
+                        gallery.appendChild(item);
+                    });
+                } else {
+                    gallery.innerHTML = '<p style="color: #999;">ไม่มีรูปภาพ</p>';
+                }
+
+                currentGalleryRecord = record;
+                document.getElementById('detailModal').classList.add('show');
+            }
+        }
+
+        // แสดงแกลเลอรี่รูปภาพในโมดัล
+        async function showDetailGallery(id, index) {
+            const data = await loadData();
+            const record = data.find(r => r.id === id);
+            
+            if (record && record.images) {
+                currentGalleryRecord = record;
+                currentGalleryIndex = index;
+                const modal = document.getElementById('galleryModal');
+                modal.classList.add('show');
+                displayDetailGalleryImage();
+            }
+        }
+
+        // แสดงรูปภาพในแกลเลอรี่โมดัล
+        function displayDetailGalleryImage() {
+            if (!currentGalleryRecord || !currentGalleryRecord.images || currentGalleryRecord.images.length === 0) return;
+            
+            const img = currentGalleryRecord.images[currentGalleryIndex];
+            document.getElementById('galleryImage').src = img.data;
+            document.getElementById('galleryDescription').textContent = img.description || '(ไม่มีรายละเอียด)';
+            document.getElementById('imageCounter').textContent = (currentGalleryIndex + 1) + ' / ' + currentGalleryRecord.images.length;
+            
+            document.getElementById('prevBtn').disabled = currentGalleryIndex === 0;
+            document.getElementById('nextBtn').disabled = currentGalleryIndex === currentGalleryRecord.images.length - 1;
+        }
+
+        // ปิด Modal
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('show');
+        }
+
+        // ปิด Modal เมื่อคลิกนอก Modal
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailModal');
+            const galleryModal = document.getElementById('galleryModal');
+            if (event.target === modal) {
+                modal.classList.remove('show');
+            }
+            if (event.target === galleryModal) {
+                galleryModal.classList.remove('show');
+            }
+        }
+
+        // ลบข้อมูล
+        async function deleteRecord(id) {
+            if (confirm('คุณแน่ใจว่าต้องการลบข้อมูลนี้หรือไม่?')) {
+                try {
+                    await deleteData(id);
+                    await displayData();
+                    alert('ลบข้อมูลสำเร็จ');
+                } catch (error) {
+                    alert('เกิดข้อผิดพลาดในการลบ: ' + error.message);
+                }
+            }
+        }
+
+        // แสดง Modal เลือกช่วงวันที่
+        function showDateRangeModal() {
+            const modal = document.getElementById('dateRangeModal');
+            modal.style.display = 'flex';
+            
+            // ตั้งค่าเริ่มต้นเป็น 7 วันล่าสุด
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(endDate.getDate() - 6);
+            
+            document.getElementById('pdfEndDate').value = endDate.toISOString().split('T')[0];
+            document.getElementById('pdfStartDate').value = startDate.toISOString().split('T')[0];
+        }
+
+        // ปิด Modal เลือกช่วงวันที่
+        function closeDateRangeModal() {
+            document.getElementById('dateRangeModal').style.display = 'none';
+        }
+
+        // ดาวน์โหลด PDF ตามช่วงวันที่
+        async function downloadPDFByDateRange() {
+            const startDateInput = document.getElementById('pdfStartDate').value;
+            const endDateInput = document.getElementById('pdfEndDate').value;
+            
+            if (!startDateInput || !endDateInput) {
+                alert('กรุณาเลือกวันที่เริ่มต้นและวันที่สิ้นสุด');
+                return;
+            }
+            
+            if (startDateInput > endDateInput) {
+                alert('วันที่เริ่มต้นต้องน้อยกว่าหรือเท่ากับวันที่สิ้นสุด');
+                return;
+            }
+            
+            closeDateRangeModal();
+            downloadPDF(startDateInput, endDateInput);
+        }
+
+        // ดาวน์โหลด PDF
+        async function downloadPDF(startDate = null, endDate = null) {
+            let data = await loadData();
+
+            if (data.length === 0) {
+                alert('ไม่มีข้อมูลให้ดาวน์โหลด');
+                return;
+            }
+
+            // กรองข้อมูลตามช่วงวันที่ถ้ามีการเลือก
+            if (startDate && endDate) {
+                data = data.filter(rec => {
+                    const recDate = rec.timestamp.split(' ')[0]; // DD/MM/YYYY
+                    const [recD, recM, recY] = recDate.split('/');
+                    const recCompare = `${recY}-${recM.padStart(2, '0')}-${recD.padStart(2, '0')}`; // YYYY-MM-DD
+                    return recCompare >= startDate && recCompare <= endDate;
+                });
+                
+                if (data.length === 0) {
+                    alert('ไม่มีข้อมูลในช่วงวันที่ที่เลือก');
+                    return;
+                }
+            }
+
+            // เรียงข้อมูลตามวันที่ (เก่า→ใหม่) แล้วตามแผนก
+            const sortedData = data.sort((a, b) => {
+                const dateA = new Date(a.timestamp.split(' ')[0].split('/').reverse().join('-'));
+                const dateB = new Date(b.timestamp.split(' ')[0].split('/').reverse().join('-'));
+                if (dateA - dateB !== 0) return dateA - dateB; // เรียงวันที่จากเก่าไปใหม่
+                if (a.department !== b.department) 
+                    return a.department.localeCompare(b.department, 'th');
+                return a.shift.localeCompare(b.shift, 'th');
+            });
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            let yPos = 10;
+            const pageHeight = doc.internal.pageSize.height;
+            const margin = 10;
+            const pageWidth = doc.internal.pageSize.width - (margin * 2);
+
+            for (let i = 0; i < sortedData.length; i++) {
+                const rec = sortedData[i];
+                
+                // สร้าง HTML สำหรับแต่ละ record
+                const tempDiv = document.createElement('div');
+                tempDiv.style.cssText = 'position:absolute;left:-9999px;width:800px;background:white;padding:20px;font-family:Arial,sans-serif;';
+                
+                let html = `
+                    <div style="border:2px solid #667eea;border-radius:5px;padding:15px;margin-bottom:10px;">
+                        <div style="background:#667eea;color:white;padding:8px;margin:-15px -15px 10px -15px;font-weight:bold;font-size:14px;">
+                            #${i + 1} | ${escapeHtml(rec.name)} | ${escapeHtml(rec.shift)}
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;">
+                            <div><strong style="color:#667eea;">ชื่อ:</strong> ${escapeHtml(rec.name)}</div>
+                            <div><strong style="color:#667eea;">ตำแหน่ง:</strong> ${escapeHtml(rec.position || '-')}</div>
+                            <div><strong style="color:#667eea;">แผนก:</strong> ${escapeHtml(rec.department || '-')}</div>
+                            <div><strong style="color:#667eea;">กะ:</strong> ${escapeHtml(rec.shift || '-')}</div>
+                            <div><strong style="color:#667eea;">เวลา:</strong> ${escapeHtml(rec.shiftTime || '-')}</div>
+                            <div><strong style="color:#667eea;">วันที่:</strong> ${rec.timestamp || '-'}</div>
+                        </div>
+                `;
+                
+                if (rec.images && rec.images.length > 0) {
+                    html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;">`;
+                    rec.images.forEach((img, j) => {
+                        html += `
+                            <div style="border:1px solid #ddd;padding:5px;">
+                                <img src="${img.data}" style="width:100%;height:120px;object-fit:cover;">
+                                ${img.description ? `<div style="font-size:11px;margin-top:3px;color:#666;">${escapeHtml(img.description)}</div>` : ''}
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+                
+                if ((rec.details && rec.details.trim()) || (rec.notes && rec.notes.trim())) {
+                    html += `<div style="background:#f5f5f5;padding:8px;margin-top:10px;font-size:12px;">`;
+                    if (rec.details && rec.details.trim()) {
+                        html += `<div><strong>รายละเอียด:</strong> ${escapeHtml(rec.details)}</div>`;
+                    }
+                    if (rec.notes && rec.notes.trim()) {
+                        html += `<div style="margin-top:5px;"><strong>หมายเหตุ:</strong> ${escapeHtml(rec.notes)}</div>`;
+                    }
+                    html += `</div>`;
+                }
+                
+                html += `</div>`;
+                tempDiv.innerHTML = html;
+                document.body.appendChild(tempDiv);
+                
+                // แปลง HTML เป็นรูปภาพด้วย html2canvas
+                const canvas = await html2canvas(tempDiv, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                document.body.removeChild(tempDiv);
+                
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                // เช็คว่าต้องขึ้นหน้าใหม่ไหม
+                if (i > 0 && yPos + imgHeight > pageHeight - 10) {
+                    doc.addPage();
+                    yPos = 10;
+                }
+                
+                doc.addImage(imgData, 'JPEG', margin, yPos, imgWidth, imgHeight);
+                yPos += imgHeight + 5;
+            }
+
+            doc.save(`ข้อมูล_${new Date().toLocaleDateString('th-TH')}.pdf`);
+        }
+
+        // ดาวน์โหลด PDF สรุปรายสัปดาห์
+        async function downloadWeeklySummaryPDF() {
+            const dateInput = document.getElementById('summaryDate');
+            const selectedDate = dateInput.value;
+            
+            if (!selectedDate) {
+                alert('กรุณาเลือกวันที่ก่อน');
+                return;
+            }
+            
+            // หาวันเริ่มต้นและสิ้นสัปดาห์ (จันทร์-อาทิตย์)
+            const selectedDateObj = new Date(selectedDate);
+            const dayOfWeek = selectedDateObj.getDay(); // 0=อาทิตย์, 1=จันทร์
+            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // หาวันจันทร์
+            
+            const weekStart = new Date(selectedDateObj);
+            weekStart.setDate(selectedDateObj.getDate() + diff);
+            
+            // สร้างอาร์เรย์ 7 วัน
+            const weekDates = [];
+            const weekHeaders = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'];
+            const weekFullDates = [];
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(weekStart);
+                date.setDate(weekStart.getDate() + i);
+                weekDates.push(date);
+                
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                weekFullDates.push(`${day}/${month}`);
+            }
+            
+            // ดึงข้อมูล
+            const allData = await loadData();
+            const masterData = masterEmployees;
+            
+            if (!masterData || masterData.length === 0) {
+                alert('ไม่พบข้อมูล Master Data');
+                return;
+            }
+            
+            // สร้าง HTML สำหรับตาราง
+            const tempDiv = document.createElement('div');
+            tempDiv.style.cssText = 'position:absolute;left:-9999px;width:1000px;background:white;padding:30px;font-family:Arial,sans-serif;';
+            
+            let html = `
+                <div style="text-align:center;margin-bottom:20px;">
+                    <h2 style="color:#667eea;margin:0 0 10px 0;font-size:24px;">📊 สรุปการกรอกข้อมูลรายสัปดาห์</h2>
+                    <p style="color:#666;font-size:16px;margin:0;">
+                        ${String(weekStart.getDate()).padStart(2, '0')}/${String(weekStart.getMonth() + 1).padStart(2, '0')}/${weekStart.getFullYear()} - 
+                        ${String(weekDates[6].getDate()).padStart(2, '0')}/${String(weekDates[6].getMonth() + 1).padStart(2, '0')}/${weekDates[6].getFullYear()}
+                    </p>
+                </div>
+                <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                    <thead>
+                        <tr style="background:#667eea;color:white;">
+                            <th style="border:2px solid #667eea;padding:12px;text-align:left;width:120px;">ชื่อ-สกุล</th>
+                            <th style="border:2px solid #667eea;padding:12px;text-align:center;width:100px;">ตำแหน่ง</th>
+                            <th style="border:2px solid #667eea;padding:12px;text-align:center;width:100px;">แผนก</th>
+            `;
+            
+            // ส่วนหัวคอลัมน์วันที่
+            for (let i = 0; i < 7; i++) {
+                html += `<th style="border:2px solid #667eea;padding:12px;text-align:center;">
+                    <div>${weekHeaders[i]}</div>
+                    <div style="font-size:12px;font-weight:normal;">${weekFullDates[i]}</div>
+                </th>`;
+            }
+            
+            html += `</tr></thead><tbody>`;
+            
+            // แถวข้อมูลพนักงาน
+            masterData.forEach((emp, idx) => {
+                const empName = emp['name'] || emp['ชื่อ-สกุล'];
+                const empPosition = emp['position'] || emp['ตำแหน่ง'] || '-';
+                const empDept = emp['department'] || emp['แผนก'] || '-';
+                const bgColor = idx % 2 === 0 ? '#ffffff' : '#f5f5f5';
+                
+                html += `<tr style="background:${bgColor};">
+                    <td style="border:1px solid #ddd;padding:12px;font-weight:bold;">${escapeHtml(empName)}</td>
+                    <td style="border:1px solid #ddd;padding:12px;text-align:center;">${escapeHtml(empPosition)}</td>
+                    <td style="border:1px solid #ddd;padding:12px;text-align:center;">${escapeHtml(empDept)}</td>`;
+                
+                weekDates.forEach(date => {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    const targetDate = `${day}/${month}/${year}`;
+                    
+                    // เช็คว่ากรอกหรือไม่
+                    const hasSubmitted = allData.some(rec => {
+                        const recDate = rec.timestamp.split(' ')[0];
+                        return rec.name === empName && recDate === targetDate;
+                    });
+                    
+                    html += `<td style="border:1px solid #ddd;padding:12px;text-align:center;font-size:20px;">
+                        ${hasSubmitted ? '✅' : '❌'}
+                    </td>`;
+                });
+                
+                html += `</tr>`;
+            });
+            
+            html += `</tbody></table>`;
+            
+            tempDiv.innerHTML = html;
+            document.body.appendChild(tempDiv);
+            
+            // แปลง HTML เป็นรูปภาพด้วย html2canvas
+            const canvas = await html2canvas(tempDiv, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+            
+            document.body.removeChild(tempDiv);
+            
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            
+            // สร้าง PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4'); // landscape
+            
+            const imgWidth = doc.internal.pageSize.width - 20;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            doc.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
+            
+            const weekStartStr = `${String(weekStart.getDate()).padStart(2, '0')}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${weekStart.getFullYear()}`;
+            doc.save(`สรุปรายสัปดาห์_${weekStartStr}.pdf`);
+        }
+
+        // ฟังก์ชันแสดง Modal สรุปรายวัน
+        function showSummaryModal() {
+            const modal = document.getElementById('summaryModal');
+            modal.style.display = 'flex';
+            
+            // ตั้งค่าวันที่เป็นวันปัจจุบัน (ค.ศ.)
+            const today = new Date();
+            const dateInput = document.getElementById('summaryDate');
+            dateInput.value = today.toISOString().split('T')[0];
+            
+            // แสดงวันที่ พ.ศ. ใต้ช่อง input
+            updateBEDateDisplay(today);
+            
+            updateSummary();
+        }
+
+        // อัพเดทการแสดงวันที่ พ.ศ.
+        function updateBEDateDisplay(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear() + 543;
+            
+            const beDisplay = document.getElementById('summaryDateBE');
+            beDisplay.textContent = `📌 วันที่ที่เลือก: ${day}/${month}/${year} (พ.ศ.)`;
+        }
+
+        // ฟังก์ชันปิด Modal สรุป
+        function closeSummaryModal() {
+            const modal = document.getElementById('summaryModal');
+            modal.style.display = 'none';
+        }
+
+        // อัพเดทสรุปตามวันที่เลือก
+        async function updateSummary() {
+            const dateInput = document.getElementById('summaryDate');
+            const selectedDate = dateInput.value;
+            
+            if (!selectedDate) return;
+            
+            // แปลงวันที่จาก YYYY-MM-DD → DD/MM/YYYY (ค.ศ. ทั้งสองฝั่ง)
+            const [year, month, day] = selectedDate.split('-');
+            const targetDate = `${day}/${month}/${year}`;
+            
+            // อัพเดทการแสดงวันที่ พ.ศ. (สำหรับแสดงให้ผู้ใช้เห็น)
+            const dateObj = new Date(selectedDate);
+            updateBEDateDisplay(dateObj);
+            
+            // ตรวจสอบว่า masterEmployees โหลดแล้วหรือยัง
+            if (!masterEmployees || masterEmployees.length === 0) {
+                console.error('❌ Master Data ยังไม่ถูกโหลด');
+                return;
+            }
+            
+            // ดึงข้อมูลทั้งหมด
+            const allData = await loadData();
+            const masterData = masterEmployees;
+            
+            console.log('🔍 ตรวจสอบข้อมูลวันที่:', selectedDate, '→', targetDate);
+            console.log('📋 ข้อมูลทั้งหมด:', allData);
+            console.log('📋 Master Data มี', masterData.length, 'คน:', masterData);
+            
+            // หาว่าใครกรอกข้อมูลในวันนี้แล้วบ้าง
+            const submittedNames = allData
+                .filter(rec => {
+                    // timestamp รูปแบบ: DD/MM/YYYY HH:MM:SS (ค.ศ.)
+                    const recDate = rec.timestamp.split(' ')[0]; // เอาแค่ DD/MM/YYYY
+                    
+                    console.log(`🔎 เทียบ: "${recDate}" === "${targetDate}" ?`, recDate === targetDate);
+                    
+                    const match = recDate === targetDate;
+                    
+                    if (match) {
+                        console.log(`✅ พบข้อมูล: ${rec.name} - ${rec.timestamp}`);
+                    }
+                    
+                    return match;
+                })
+                .map(rec => rec.name);
+            
+            const uniqueSubmitted = [...new Set(submittedNames)];
+            
+            console.log('👥 คนที่กรอกแล้ว:', uniqueSubmitted);
+            console.log('📋 Master Data:', masterData);
+            
+            // แสดงรายชื่อพนักงาน
+            const employeeList = document.getElementById('employeeList');
+            employeeList.innerHTML = '';
+            
+            let submittedCount = 0;
+            
+            console.log('🔥 Master Data จำนวน:', masterData.length);
+            
+            masterData.forEach((emp, index) => {
+                console.log(`📌 Employee ${index}:`, emp);
+                console.log(`   - Keys:`, Object.keys(emp));
+                
+                const empName = emp['name'] || emp['ชื่อ-สกุล'];
+                const empPosition = emp['position'] || emp['ตำแหน่ง'];
+                const empDept = emp['department'] || emp['แผนก'];
+                
+                console.log(`   - ชื่อ: "${empName}"`);
+                console.log(`   - ตำแหน่ง: "${empPosition}"`);
+                console.log(`   - แผนก: "${empDept}"`);
+                
+                const isSubmitted = uniqueSubmitted.includes(empName);
+                
+                console.log(`🔍 เช็ค "${empName}": ${isSubmitted ? 'กรอกแล้ว ✅' : 'ยังไม่กรอก ❌'}`);
+                
+                if (isSubmitted) submittedCount++;
+                
+                const div = document.createElement('div');
+                div.className = `employee-item ${isSubmitted ? 'submitted' : 'not-submitted'}`;
+                div.innerHTML = `
+                    <div class="employee-status">${isSubmitted ? '✅' : '❌'}</div>
+                    <div class="employee-info">
+                        <div class="employee-name">${escapeHtml(empName)}</div>
+                        <div class="employee-position">${escapeHtml(empPosition)} - ${escapeHtml(empDept)}</div>
+                    </div>
+                `;
+                employeeList.appendChild(div);
+            });
+            
+            // แสดงสรุปผล
+            const totalCount = masterData.length;
+            const percentage = totalCount > 0 ? Math.round((submittedCount / totalCount) * 100) : 0;
+            
+            document.getElementById('summaryCount').textContent = `${submittedCount}/${totalCount} คน`;
+            document.getElementById('summaryPercentage').textContent = `${percentage}%`;
+        }
+
+        // ดาวน์โหลด Excel (เก่า - ยังเก็บไว้)
+        function downloadExcel() {
+            const data = loadData();
+
+            if (data.length === 0) {
+                alert('ไม่มีข้อมูลให้ดาวน์โหลด');
+                return;
+            }
+
+            try {
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('ข้อมูล');
+
+                // เพิ่มหัวเรื่อง
+                const headers = ['ชื่อ-สกุล', 'แผนก', 'กะการทำงาน', 'รายละเอียด', 'จำนวนรูปภาพ', 'หมายเหตุ', 'เวลาอัพโหลด'];
+                worksheet.addRow(headers);
+
+                // สไตล์หัวเรื่อง
+                const headerRow = worksheet.getRow(1);
+                headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF667eea' } };
+                headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+
+                // ตั้งค่าความกว้างคอลัมน์
+                worksheet.columns = [
+                    { width: 20 },
+                    { width: 15 },
+                    { width: 15 },
+                    { width: 25 },
+                    { width: 12 },
+                    { width: 25 },
+                    { width: 20 }
+                ];
+
+                // เพิ่มข้อมูล
+                let rowIndex = 2;
+                data.forEach(record => {
+                    worksheet.addRow([
+                        record.name || '-',
+                        record.department || '-',
+                        record.shift || '-',
+                        record.details || '-',
+                        record.images ? record.images.length : 0,
+                        record.notes || '-',
+                        record.timestamp || record.date || '-'
+                    ]);
+                    rowIndex++;
+                });
+
+                // เพิ่มชีท "รูปภาพ"
+                const imageSheet = workbook.addWorksheet('รูปภาพ');
+                imageSheet.columns = [
+                    { width: 20 },
+                    { width: 15 },
+                    { width: 50 }
+                ];
+
+                imageSheet.addRow(['ชื่อ-สกุล', 'ลำดับรูป', 'รายละเอียด']);
+                const imageHeaderRow = imageSheet.getRow(1);
+                imageHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                imageHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF667eea' } };
+
+                let imageRowIndex = 2;
+                data.forEach(record => {
+                    if (record.images && record.images.length > 0) {
+                        record.images.forEach((img, idx) => {
+                            const row = imageSheet.addRow([
+                                record.name,
+                                idx + 1,
+                                img.description || '-'
+                            ]);
+                            
+                            // เพิ่มรูปภาพ
+                            try {
+                                const imageId = workbook.addImage({
+                                    buffer: Buffer.from(img.data.split(',')[1], 'base64'),
+                                    extension: 'png'
+                                });
+                                imageSheet.addImage(imageId, `C${imageRowIndex}`);
+                                imageSheet.getCell(`C${imageRowIndex}`).value = img.description || '-';
+                            } catch (e) {
+                                // ถ้าเพิ่มรูปไม่สำเร็จ เพิ่มข้อความแทน
+                                row.getCell(3).value = `[รูปภาพ] ${img.description || 'ไม่มีชื่อ'}`;
+                            }
+                            
+                            imageRowIndex++;
+                        });
+                    }
+                });
+
+                // บันทึกไฟล์
+                workbook.xlsx.writeBuffer().then(buffer => {
+                    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `ข้อมูล_${new Date().toLocaleDateString('th-TH')}.xlsx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                });
+            } catch (error) {
+                console.error('Error downloading Excel:', error);
+                alert('เกิดข้อผิดพลาดในการดาวน์โหลด: ' + error.message);
+            }
+        }
+
+        // ป้องกัน XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // โหลดข้อมูลเมื่อเปิดหน้า
+        document.addEventListener('DOMContentLoaded', displayData);
+    </script>
+</body>
+</html>
