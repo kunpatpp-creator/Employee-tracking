@@ -1433,15 +1433,17 @@
                         const response = await fetch(img.data);
                         const blob = await response.blob();
                         
+                        console.log(`📦 ขนาดรูป: ${(blob.size / 1024).toFixed(2)} KB`);
+                        
                         // สร้างชื่อไฟล์ unique
                         const fileName = `images/${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}.jpg`;
                         const { ref, uploadBytes, getDownloadURL } = window.firebaseModules;
                         const storageRef = ref(window.storage, fileName);
                         
-                        // อัพโหลดพร้อม timeout 20 วินาที
+                        // อัพโหลดพร้อม timeout 60 วินาที (เพิ่มจาก 20)
                         const uploadPromise = uploadBytes(storageRef, blob).then(() => getDownloadURL(storageRef));
                         const timeoutPromise = new Promise((_, reject) => 
-                            setTimeout(() => reject(new Error('อัพโหลดรูปภาพล้มเหลว กรุณาตรวจสอบสัญญาณอินเทอร์เน็ต')), 20000)
+                            setTimeout(() => reject(new Error('อัพโหลดรูปภาพล้มเหลว กรุณาตรวจสอบสัญญาณอินเทอร์เน็ต หรือลองใช้รูปที่มีขนาดเล็กกว่า')), 60000)
                         );
                         
                         const downloadURL = await Promise.race([uploadPromise, timeoutPromise]);
