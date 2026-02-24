@@ -929,11 +929,21 @@
         // บันทึกข้อมูลลง Firestore
         async function saveData(recordData) {
             try {
+                console.log('💾 กำลังบันทึกข้อมูลลง Firestore...');
                 const { collection, addDoc, Timestamp } = window.firebaseModules;
-                const docRef = await addDoc(collection(window.db, 'employees'), {
+                
+                // ตั้ง timeout 15 วินาที
+                const savePromise = addDoc(collection(window.db, 'employees'), {
                     ...recordData,
                     createdAt: Timestamp.now()
                 });
+                
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('บันทึกข้อมูล timeout')), 15000)
+                );
+                
+                const docRef = await Promise.race([savePromise, timeoutPromise]);
+                
                 console.log('✅ บันทึกข้อมูลสำเร็จ ID:', docRef.id);
                 return docRef.id;
             } catch (error) {
@@ -1413,30 +1423,51 @@
                 // อัพโหลดรูปภาพไปที่ Firebase Storage
                 const uploadedImages = [];
                 if (images && images.length > 0) {
-                    for (let i = 0; i < images.length; i++) {
-                        const img = images[i];
+                    console.log(`📤 กำลังอัพโหลดรูปภาพ ${images.length} รูป...`);
+                    
+                    // อัพโหลดทุกรูปพร้อมกัน (Parallel) แทนการทำทีละรูป
+                    const uploadPromises = images.map(async (img, i) => {
                         try {
+                            console.log(`📷 อัพโหลดรูปที่ ${i + 1}/${images.length}`);
+                            
                             // แปลง base64 เป็น blob
                             const response = await fetch(img.data);
                             const blob = await response.blob();
                             
                             // สร้างชื่อไฟล์ unique
-                            const fileName = `images/${Date.now()}_${i}.jpg`;
+                            const fileName = `images/${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}.jpg`;
                             const { ref, uploadBytes, getDownloadURL } = window.firebaseModules;
                             const storageRef = ref(window.storage, fileName);
                             
-                            // อัพโหลด
-                            await uploadBytes(storageRef, blob);
-                            const downloadURL = await getDownloadURL(storageRef);
+                            // อัพโหลดพร้อม timeout 10 วินาที
+                            const uploadPromise = uploadBytes(storageRef, blob).then(() => getDownloadURL(storageRef));
+                            const timeoutPromise = new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error('Upload timeout')), 10000)
+                            );
                             
-                            uploadedImages.push({
+                            const downloadURL = await Promise.race([uploadPromise, timeoutPromise]);
+                            
+                            console.log(`✅ อัพโหลดรูปที่ ${i + 1} สำเร็จ`);
+                            
+                            return {
                                 data: downloadURL,
                                 description: img.description
-                            });
+                            };
                         } catch (error) {
-                            console.error('Error uploading image:', error);
+                            console.error(`❌ อัพโหลดรูปที่ ${i + 1} ไม่สำเร็จ:`, error.message);
+                            // ใช้ base64 แทน
+                            return {
+                                data: img.data,
+                                description: img.description
+                            };
                         }
-                    }
+                    });
+                    
+                    // รอให้ทุกรูปอัพโหลดเสร็จ (หรือ timeout)
+                    const results = await Promise.all(uploadPromises);
+                    uploadedImages.push(...results);
+                    
+                    console.log(`✅ อัพโหลดเสร็จทั้งหมด: ${uploadedImages.length} รูป`);
                 }
                 
                 const newRecord = {
@@ -1470,10 +1501,20 @@
                 displayImageGallery();
 
                 await displayData();
-                alert('บันทึกข้อมูลสำเร็จ!');
+                alert('✅ บันทึกข้อมูลสำเร็จ!');
             } catch (error) {
-                console.error('Error saving record:', error);
-                alert('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
+                console.error('❌ Error saving record:', error);
+                
+                let errorMsg = 'เกิดข้อผิดพลาดในการบันทึก\n\n';
+                if (error.message.includes('timeout')) {
+                    errorMsg += '⏱️ การเชื่อมต่อช้าเกินไป กรุณาลองใหม่อีกครั้ง\nหรือตรวจสอบสัญญาณอินเทอร์เน็ต';
+                } else if (error.message.includes('permission')) {
+                    errorMsg += '🔒 ไม่มีสิทธิ์เข้าถึง กรุณาติดต่อผู้ดูแลระบบ';
+                } else {
+                    errorMsg += '📝 ' + error.message;
+                }
+                
+                alert(errorMsg);
             }
         }
 
@@ -2151,16 +2192,21 @@
 
         // โหลดข้อมูลเมื่อเปิดหน้า
         document.addEventListener('DOMContentLoaded', async function() {
-            // รอให้ Firebase โหลดเสร็จก่อน
+            console.log('🚀 เริ่มโหลดระบบ...');
+            
+            // รอให้ Firebase โหลดเสร็จก่อน (timeout 3 วินาที)
             let retries = 0;
-            while (!window.db && retries < 50) {
+            while (!window.db && retries < 30) {
                 await new Promise(resolve => setTimeout(resolve, 100));
                 retries++;
             }
             
             if (!window.db) {
                 console.error('❌ Firebase ไม่สามารถโหลดได้');
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ Firebase กรุณา Refresh หน้าเว็บ');
+                // ใช้ Master Data แบบ Embedded แทน
+                console.log('ℹ️ ใช้โหมดออฟไลน์ (ไม่มี Firebase)');
+                updateNameDropdown();
+                loadShiftData();
                 return;
             }
             
