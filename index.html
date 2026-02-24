@@ -1176,8 +1176,8 @@
         }
 
         // อัปเดต Master Data (ชื่อ ตำแหน่ง แผนก)
-        function updateMasterData() {
-            const data = loadData();
+        async function updateMasterData() {
+            const data = await loadData();
             const nameSelect = document.getElementById('name');
             
             // เก็บชื่อที่ไม่ซ้ำกัน
@@ -1483,7 +1483,7 @@
                 };
 
                 await saveData(newRecord);
-                updateMasterData(); // อัปเดต master data
+                await updateMasterData(); // อัปเดต master data
 
                 // ล้างฟอร์ม
                 document.getElementById('name').value = '';
