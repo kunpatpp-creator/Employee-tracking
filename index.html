@@ -471,7 +471,17 @@
             cursor: not-allowed;
         }
 
+        /* ซ่อนส่วนจัดการ Master ในมือถือ */
+        .master-upload-section {
+            display: block;
+        }
+
         @media (max-width: 600px) {
+            /* ซ่อนส่วนอัพโหลด Master ในมือถือ */
+            .master-upload-section {
+                display: none !important;
+            }
+
             body {
                 padding: 10px;
             }
@@ -648,8 +658,8 @@
                 <button class="btn-summary" onclick="showSummaryModal()">📊 ดูสรุปรายวัน</button>
             </div>
 
-            <!-- ปุ่มอัพโหลด Master Excel -->
-            <div style="margin-top: 20px; padding: 15px; background: #f0f4ff; border-radius: 8px; border: 2px dashed #667eea;">
+            <!-- ปุ่มอัพโหลด Master Excel (แสดงเฉพาะในคอมพิวเตอร์) -->
+            <div class="master-upload-section" style="margin-top: 20px; padding: 15px; background: #f0f4ff; border-radius: 8px; border: 2px dashed #667eea;">
                 <h3 style="margin: 0 0 10px 0; color: #667eea; font-size: 16px;">📋 จัดการข้อมูล Master (ชื่อ-ตำแหน่ง-แผนก)</h3>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <input type="file" id="masterExcelFile" accept=".xlsx, .xls" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
