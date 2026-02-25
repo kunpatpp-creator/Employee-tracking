@@ -1760,7 +1760,7 @@
                     rec.images.forEach((img, j) => {
                         html += `
                             <div style="border:1px solid #ddd;padding:5px;">
-                                <img src="${img.data}" style="width:100%;height:120px;object-fit:cover;">
+                                <img src="${img.data}" style="width:100%;height:auto;">
                                 ${img.description ? `<div style="font-size:11px;margin-top:3px;color:#666;">${escapeHtml(img.description)}</div>` : ''}
                             </div>
                         `;
