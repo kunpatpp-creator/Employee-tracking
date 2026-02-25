@@ -811,7 +811,6 @@
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -823,17 +822,15 @@
             appId: "1:288580054114:web:60b93f66c071ee6785f53b"
         };
 
-        // Initialize Firebase
+        // Initialize Firebase (ใช้แค่ Firestore - ไม่ใช้ Storage เพื่อไม่ต้องเสียเงิน)
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
-        // ทำให้ Firebase modules พร้อมใช้งาน globally
+        // ทำให้ Firebase modules พร้อมใช้งาน globally (ไม่รวม Storage modules)
         window.db = db;
-        window.storage = storage;
-        window.firebaseModules = { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, Timestamp, ref, uploadBytes, getDownloadURL };
+        window.firebaseModules = { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, Timestamp };
         
-        console.log('🔥 Firebase initialized successfully');
+        console.log('🔥 Firebase initialized successfully (Firestore only - FREE plan)');
     </script>
     
     <script>
@@ -1349,6 +1346,39 @@
             }
         }
 
+        // ฟังก์ชันลดขนาดรูปภาพ (บีบอัดแบบหนัก)
+        async function compressImageToBase64(base64Data, quality = 0.3, maxWidth = 800) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let { width, height } = img;
+                    
+                    // ลดขนาดตามอัตราส่วน
+                    if (width > maxWidth) {
+                        height = (height / width) * maxWidth;
+                        width = maxWidth;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // แปลงเป็น JPEG ที่บีบอัดแล้ว
+                    canvas.toBlob((blob) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            console.log(`🗜️ ลดขนาดรูปจาก ${(base64Data.length / 1024).toFixed(0)}KB เหลือ ${(reader.result.length / 1024).toFixed(0)}KB`);
+                            resolve(reader.result);
+                        };
+                        reader.readAsDataURL(blob);
+                    }, 'image/jpeg', quality);
+                };
+                img.src = base64Data;
+            });
+        }
+
         // ปิด Gallery Modal
         function closeGalleryModal() {
             document.getElementById('galleryModal').classList.remove('show');
@@ -1420,47 +1450,27 @@
                 const seconds = String(now.getSeconds()).padStart(2, '0');
                 const timestamp = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
                 
-                // อัพโหลดรูปภาพไปที่ Firebase Storage (บังคับต้องสำเร็จ)
+                // ประมวลผลรูปภาพ (ลดขนาดเก็บใน Firestore โดยตรง)
                 const uploadedImages = [];
                 if (images && images.length > 0) {
-                    console.log(`📤 กำลังอัพโหลดรูปภาพ ${images.length} รูป...`);
+                    console.log(`📤 กำลังประมวลผลรูปภาพ ${images.length} รูป...`);
                     
-                    // อัพโหลดทุกรูปพร้อมกัน (Parallel)
-                    const uploadPromises = images.map(async (img, i) => {
-                        console.log(`📷 อัพโหลดรูปที่ ${i + 1}/${images.length}`);
+                    for (let i = 0; i < images.length; i++) {
+                        const img = images[i];
+                        console.log(`📷 ประมวลผลรูปที่ ${i + 1}/${images.length}`);
                         
-                        // แปลง base64 เป็น blob
-                        const response = await fetch(img.data);
-                        const blob = await response.blob();
+                        // ลดขนาดรูปภาพให้เล็กมาก (ความกว้างสูงสุด 800px, คุณภาพ 30%)
+                        const compressedBase64 = await compressImageToBase64(img.data, 0.3, 800);
                         
-                        console.log(`📦 ขนาดรูป: ${(blob.size / 1024).toFixed(2)} KB`);
-                        
-                        // สร้างชื่อไฟล์ unique
-                        const fileName = `images/${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}.jpg`;
-                        const { ref, uploadBytes, getDownloadURL } = window.firebaseModules;
-                        const storageRef = ref(window.storage, fileName);
-                        
-                        // อัพโหลดพร้อม timeout 60 วินาที (เพิ่มจาก 20)
-                        const uploadPromise = uploadBytes(storageRef, blob).then(() => getDownloadURL(storageRef));
-                        const timeoutPromise = new Promise((_, reject) => 
-                            setTimeout(() => reject(new Error('อัพโหลดรูปภาพล้มเหลว กรุณาตรวจสอบสัญญาณอินเทอร์เน็ต หรือลองใช้รูปที่มีขนาดเล็กกว่า')), 60000)
-                        );
-                        
-                        const downloadURL = await Promise.race([uploadPromise, timeoutPromise]);
-                        
-                        console.log(`✅ อัพโหลดรูปที่ ${i + 1} สำเร็จ`);
-                        
-                        return {
-                            data: downloadURL,
+                        uploadedImages.push({
+                            data: compressedBase64,
                             description: img.description
-                        };
-                    });
+                        });
+                        
+                        console.log(`✅ ประมวลผลรูปที่ ${i + 1} เสร็จ`);
+                    }
                     
-                    // รอให้ทุกรูปอัพโหลดเสร็จ (ถ้าไม่สำเร็จจะ throw error)
-                    const results = await Promise.all(uploadPromises);
-                    uploadedImages.push(...results);
-                    
-                    console.log(`✅ อัพโหลดเสร็จทั้งหมด: ${uploadedImages.length} รูป`);
+                    console.log(`✅ ประมวลผลเสร็จทั้งหมด: ${uploadedImages.length} รูป`);
                 }
                 
                 const newRecord = {
