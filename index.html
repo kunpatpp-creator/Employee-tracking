@@ -1642,13 +1642,25 @@
 
         // ลบข้อมูล
         async function deleteRecord(id) {
+            // ขอรหัสผ่าน
+            const password = prompt('🔒 กรุณาใส่รหัสผ่านเพื่อลบข้อมูล:');
+            
+            if (password === null) {
+                return; // ผู้ใช้กด Cancel
+            }
+            
+            if (password !== '0000') {
+                alert('❌ รหัสผ่านไม่ถูกต้อง');
+                return;
+            }
+            
             if (confirm('คุณแน่ใจว่าต้องการลบข้อมูลนี้หรือไม่?')) {
                 try {
                     await deleteData(id);
                     await displayData();
-                    alert('ลบข้อมูลสำเร็จ');
+                    alert('✅ ลบข้อมูลสำเร็จ');
                 } catch (error) {
-                    alert('เกิดข้อผิดพลาดในการลบ: ' + error.message);
+                    alert('❌ เกิดข้อผิดพลาดในการลบ: ' + error.message);
                 }
             }
         }
